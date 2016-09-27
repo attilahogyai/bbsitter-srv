@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:sec="http://www.springframework.org/schema/security"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/security
+		http://www.springframework.org/schema/security/spring-security-3.2.xsd
+        ">
+
+	<context:annotation-config />
+	<context:component-scan base-package="org.mfr">
+		<context:exclude-filter type="regex"
+			expression="com.mfr.rest.messages" />
+		<context:exclude-filter type="regex"
+			expression="com.mfr.rest.util" />
+	</context:component-scan>
+<!-- 	<import resource="transaction-manager.xml"/> -->
+<!-- 	<tx:annotation-driven transaction-manager="transactionManager"/> -->
+	<aop:config>
+		<aop:pointcut id="controllerMethods" expression="execution(* org.mfr.xprt.rest.controller.*.*(..))" />
+		<aop:pointcut id="userControllerMethods" expression="execution(* org.mfr.xprt.rest.controller.UserController.*(..))" />
+		<aop:advisor advice-ref="transactionManagerAdvice"
+			pointcut-ref="controllerMethods" />
+		<aop:advisor advice-ref="transactionManagerUserControllerAdvice"
+			pointcut-ref="userControllerMethods" />						
+	</aop:config>
+	
+	<tx:advice id="transactionManagerAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="update*" propagation="REQUIRED"/>
+			<tx:method name="change*" propagation="REQUIRED"/>
+			<tx:method name="create*" propagation="REQUIRED"/>
+			<tx:method name="delete*" propagation="REQUIRED"/>
+			<tx:method name="refresh*" propagation="REQUIRED"/>
+			<tx:method name="signup*" propagation="REQUIRED"/>
+			<tx:method name="get*" propagation="REQUIRED" read-only="true"/>
+			<tx:method name="find*" propagation="REQUIRED" read-only="true"/>
+		</tx:attributes>
+	</tx:advice>
+	<tx:advice id="transactionManagerUserControllerAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="*" propagation="REQUIRED"/>
+		</tx:attributes>
+	</tx:advice>
+	
+	
+	<bean id="jackson" class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+	<property name="objectMapper"><bean class="org.mfr.rest.serializer.MfrObjectMapper"></bean></property>
+	</bean>
+	<bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
+	<property name="messageConverters">
+	<list>
+		<ref bean="jackson"/>
+	</list>
+	</property>
+	</bean>
+	
+
+</beans>

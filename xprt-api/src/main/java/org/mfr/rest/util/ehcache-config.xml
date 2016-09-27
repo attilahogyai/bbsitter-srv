@@ -1,0 +1,9 @@
+<cache name="tokenCache"
+    maxEntriesLocalHeap="200"
+    eternal="false"
+    timeToIdleSeconds="1800"
+    timeToLiveSeconds="0"
+    copyOnRead="false"
+    copyOnWrite="false">
+  <persistence strategy="none"/>
+</cache>

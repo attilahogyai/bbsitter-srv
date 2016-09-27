@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:sec="http://www.springframework.org/schema/security" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc 
+ 		http://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx.xsd
+ 		http://www.springframework.org/schema/beans 
+        http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop.xsd
+ 		http://www.springframework.org/schema/context  
+ 		http://www.springframework.org/schema/context/spring-context.xsd 
+ 		http://www.springframework.org/schema/security 
+       	http://www.springframework.org/schema/security/spring-security-3.2.xsd 
+ 		">
+	<!-- Resolves views selected for rendering by @Controllers to .jsp resources 
+		in the /WEB-INF/views directory -->
+	<bean
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="prefix" value="/WEB-INF/views/" />
+		<property name="suffix" value=".jsp" />
+	</bean>
+
+	<context:component-scan base-package="org.mfr" />
+	<context:annotation-config />
+
+	<import resource="transaction-manager.xml" />
+
+	<aop:config>
+		<aop:pointcut id="productServiceMethods" expression="execution(* org.mfr.data.*.*(..))" />
+		<aop:pointcut id="productServiceMethods2" expression="execution(* org.mfr.manager.*.*(..))" />
+		<aop:pointcut id="productServiceMethods3" expression="execution(* org.mfr.xprt.data.*.*(..))" />
+		<aop:pointcut id="productServiceMethods4"
+			expression="execution(* org.mfr.xprt.rest.controller.*.*(..))" />
+		<aop:advisor advice-ref="transactionManagerAdvice"
+			pointcut-ref="productServiceMethods" />
+		<aop:advisor advice-ref="transactionManagerAdvice"
+			pointcut-ref="productServiceMethods2" />
+		<aop:advisor advice-ref="transactionManagerAdvice"
+			pointcut-ref="productServiceMethods3" />
+		<aop:advisor advice-ref="transactionManagerAdviceService"
+			pointcut-ref="productServiceMethods4" />
+
+	</aop:config>
+
+	<tx:advice id="transactionManagerAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="persist*" propagation="REQUIRED" />
+			<tx:method name="merge*" propagation="REQUIRED" />
+			<tx:method name="remove*" propagation="REQUIRED" />
+		</tx:attributes>
+	</tx:advice>
+	<tx:advice id="transactionManagerAdviceService"
+		transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="run" propagation="REQUIRED" />
+		</tx:attributes>
+	</tx:advice>
+
+
+	<!-- bean post-processor for JPA annotations -->
+	<bean
+		class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor" />
+
+	<!-- <bean id="userManager" class="org.mfr.manager.UserManager"> -->
+	<!-- <property name="oAuthServiceMap"> -->
+	<!-- <map> -->
+	<!-- <entry key="dummy" value-ref="dummy"></entry> -->
+	<!-- </map> -->
+	<!-- </property> -->
+	<!-- </bean> -->
+	<bean id="dummy" class="org.mfr.rest.util.DummyOAuth"></bean>
+
+	<!-- XPRT configs -->
+	<bean id="useraccDao" class="org.mfr.xprt.data.UseraccDao" />
+	<bean id="xSessionDao" class="org.mfr.xprt.data.XSessionDao" />
+	<bean id="xLangtextDao" class="org.mfr.xprt.data.XLangtextDao" />
+	<bean id="xEventDao" class="org.mfr.xprt.data.XEventDao" />
+	<bean id="xSetupDao" class="org.mfr.xprt.data.XSetupDao" />
+	<bean id="xSearchManagerDao" class="org.mfr.xprt.data.XSearchManagerDao" />
+	<bean id="xXprtDetailDao" class="org.mfr.xprt.data.XXprtDetailDao" />
+	<bean id="xXprtProfessionDao" class="org.mfr.xprt.data.XXprtProfessionDao" />
+	<bean id="xProfessionDao" class="org.mfr.xprt.data.XProfessionDao" />
+	<bean id="xLogDao" class="org.mfr.xprt.data.XLogDao" />
+	<bean id="xLanguageDao" class="org.mfr.xprt.data.XLanguageDao" />
+	<bean id="countryDao" class="org.mfr.xprt.data.CountryDao" />
+	<bean id="cityDao" class="org.mfr.xprt.data.CityDao" />
+	<bean id="nationalHolidayDao" class="org.mfr.xprt.data.NationalHolidayDao" />
+	<bean id="rankDao" class="org.mfr.xprt.data.RankDao" />
+	<bean id="commentDao" class="org.mfr.xprt.data.CommentDao" />
+	<bean id="addressDao" class="org.mfr.xprt.data.AddressDao" />
+	<bean id="useraccPrefsDao" class="org.mfr.xprt.data.UseraccPrefsDao"/>
+	
+	<bean id="questionOptionsDao" class="org.mfr.xprt.data.QuestionOptionsDao"/>
+	<bean id="answerDao" class="org.mfr.xprt.data.AnswerDao"/>
+	<bean id="questionDao" class="org.mfr.xprt.data.QuestionDao"/>
+
+	<bean id="notificationSenderService" class="org.mfr.event.service.EventNotificationService"
+		init-method="init" />
+	<bean id="eventTerminatedService" class="org.mfr.event.service.EventTerminatedService"
+		init-method="init" />
+
+	<bean id="langHelper" class="org.mfr.xprt.rest.controller.XLangtextDaoHelper" />
+
+	<bean id="userManager" class="org.mfr.xprt.manager.UserManager"/>
+	<bean id="foreignLoginManager" class="org.mfr.xprt.manager.UserManager"
+		autowire="byName">
+		<property name="oAuthServiceMap">
+			<map>
+				<entry key="google" value-ref="googleOAuthService"></entry>
+				<entry key="facebook" value-ref="facebookOAuthService"></entry>
+			</map>
+		</property>
+	</bean>
+	
+	<bean id="googleOAuthService" class="org.mfr.xprt.manager.oauth.GoolgeOAuthServices"></bean>
+  	<bean id="facebookOAuthService" class="org.mfr.xprt.manager.oauth.FacebookOAuthService"></bean>
+</beans>
